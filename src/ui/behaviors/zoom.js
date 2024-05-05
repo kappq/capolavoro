@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-import { WIDTH, HEIGHT } from "./consts";
+import { WIDTH, HEIGHT } from "../consts";
 
 export default class Zoom {
   constructor(linkGroup, nodeGroup) {

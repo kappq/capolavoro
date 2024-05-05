@@ -8,8 +8,9 @@ import {
   NODE_STROKE_WIDTH,
   NODE_STROKE_COLOR,
 } from "./consts";
-import Zoom from "./zoom";
-import Drag from "./drag";
+import Zoom from "./behaviors/zoom";
+import Drag from "./behaviors/drag";
+import Tooltip from "./behaviors/tooltip";
 
 export default class Visualization {
   constructor(graph) {
@@ -24,6 +25,7 @@ export default class Visualization {
 
     this.zoom = new Zoom(this.linkGroup, this.nodeGroup);
     this.drag = new Drag(this.simulation);
+    this.tooltip = new Tooltip();
   }
 
   start() {
@@ -95,6 +97,7 @@ export default class Visualization {
       .attr("fill", "black");
 
     this.drag.add(this.node);
+    this.tooltip.add(this.node);
 
     this.simulation.nodes(this.nodes);
     this.simulation.force("link").links(this.links);
