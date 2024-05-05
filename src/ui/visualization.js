@@ -8,6 +8,7 @@ import {
   NODE_STROKE_WIDTH,
   NODE_STROKE_COLOR,
 } from "./consts";
+import Zoom from "./zoom";
 import Drag from "./drag";
 
 export default class Visualization {
@@ -21,6 +22,7 @@ export default class Visualization {
     [this.linkGroup, this.link] = this._createLinks();
     [this.nodeGroup, this.node] = this._createNodes();
 
+    this.zoom = new Zoom(this.linkGroup, this.nodeGroup);
     this.drag = new Drag(this.simulation);
   }
 
@@ -66,6 +68,8 @@ export default class Visualization {
   }
 
   _prepare() {
+    this.zoom.add(this.svg);
+
     this._ticked = this._ticked.bind(this);
     this.simulation.on("tick", this._ticked);
 
