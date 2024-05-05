@@ -5,12 +5,15 @@ import {
   HEIGHT,
   LINK_STROKE_OPACITY,
   LINK_STROKE_COLOR,
-  NODE_STROKE_WIDTH,
   NODE_STROKE_COLOR,
+  NODE_STROKE_WIDTH,
+  NODE_RADIUS,
+  NODE_FILL,
 } from "./consts";
 import Zoom from "./behaviors/zoom";
 import Drag from "./behaviors/drag";
 import Tooltip from "./behaviors/tooltip";
+import Select from "./behaviors/select";
 
 export default class Visualization {
   constructor(graph) {
@@ -26,6 +29,7 @@ export default class Visualization {
     this.zoom = new Zoom(this.linkGroup, this.nodeGroup);
     this.drag = new Drag(this.simulation);
     this.tooltip = new Tooltip();
+    this.select = new Select(this.links, this.nodes); // TODO: links and nodes may vary during the visualization
   }
 
   start() {
@@ -93,11 +97,12 @@ export default class Visualization {
     this.node = this.node
       .data(this.nodes)
       .join("circle")
-      .attr("r", 5)
-      .attr("fill", "black");
+      .attr("r", NODE_RADIUS)
+      .attr("fill", NODE_FILL);
 
     this.drag.add(this.node);
     this.tooltip.add(this.node);
+    this.select.add(this.link, this.node);
 
     this.simulation.nodes(this.nodes);
     this.simulation.force("link").links(this.links);
