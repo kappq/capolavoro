@@ -8,6 +8,7 @@ import {
   NODE_STROKE_WIDTH,
   NODE_STROKE_COLOR,
 } from "./consts";
+import Drag from "./drag";
 
 export default class Visualization {
   constructor(graph) {
@@ -15,17 +16,16 @@ export default class Visualization {
     this.links = graph.links.map((d) => ({ ...d }));
     this.nodes = graph.nodes.map((d) => ({ ...d }));
 
-    const svg = this._createSvg();
-
+    this.svg = this._createSvg();
     this.simulation = this._createSimulation();
-    [this.linkGroup, this.link] = this._createLinks(svg);
-    [this.nodeGroup, this.node] = this._createNodes(svg);
+    [this.linkGroup, this.link] = this._createLinks();
+    [this.nodeGroup, this.node] = this._createNodes();
 
-    this._ticked = this._ticked.bind(this);
-    this.simulation.on("tick", this._ticked);
+    this.drag = new Drag(this.simulation);
+  }
 
-    document.body.append(svg.node());
-
+  start() {
+    this._prepare();
     this._run();
   }
 
@@ -45,8 +45,8 @@ export default class Visualization {
       .attr("viewBox", [-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT]);
   }
 
-  _createLinks(svg) {
-    const linkGroup = svg
+  _createLinks() {
+    const linkGroup = this.svg
       .append("g")
       .attr("stroke-opacity", LINK_STROKE_OPACITY)
       .attr("stroke", LINK_STROKE_COLOR);
@@ -55,8 +55,8 @@ export default class Visualization {
     return [linkGroup, link];
   }
 
-  _createNodes(svg) {
-    const nodeGroup = svg
+  _createNodes() {
+    const nodeGroup = this.svg
       .append("g")
       .attr("stroke-width", NODE_STROKE_WIDTH)
       .attr("stroke", NODE_STROKE_COLOR);
@@ -65,16 +65,11 @@ export default class Visualization {
     return [nodeGroup, node];
   }
 
-  _run() {
-    this.link = this.link.data(this.links).join("line");
-    this.node = this.node
-      .data(this.nodes)
-      .join("circle")
-      .attr("r", 5)
-      .attr("fill", "black");
+  _prepare() {
+    this._ticked = this._ticked.bind(this);
+    this.simulation.on("tick", this._ticked);
 
-    this.simulation.nodes(this.nodes);
-    this.simulation.force("link").links(this.links);
+    document.body.append(this.svg.node());
   }
 
   _ticked() {
@@ -85,5 +80,19 @@ export default class Visualization {
       .attr("y2", (d) => d.target.y);
 
     this.node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+  }
+
+  _run() {
+    this.link = this.link.data(this.links).join("line");
+    this.node = this.node
+      .data(this.nodes)
+      .join("circle")
+      .attr("r", 5)
+      .attr("fill", "black");
+
+    this.drag.add(this.node);
+
+    this.simulation.nodes(this.nodes);
+    this.simulation.force("link").links(this.links);
   }
 }
