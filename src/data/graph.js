@@ -39,7 +39,7 @@ export default class Graph {
           // TODO: this should probably be done outside the loop
           this._addNode(opposingCountry, opposingCountryCode);
 
-          const link = new Link(
+          this._addLink(
             country,
             opposingCountry,
             conflictId,
@@ -51,7 +51,6 @@ export default class Graph {
             conflictStart,
             conflictEnd,
           );
-          this.links.push(link);
         }
       }
     }
@@ -133,10 +132,6 @@ export default class Graph {
     return [conflictStart, conflictEnd];
   }
 
-  _containsNode(nodeId) {
-    return this.nodes.some((node) => node.id === nodeId);
-  }
-
   _addNode(country, countryCode) {
     if (!this._containsNode(country)) {
       const node = new Node(country);
@@ -145,5 +140,46 @@ export default class Graph {
       if (countryCode && countryCode !== "-99") node.code = countryCode;
       this.nodes.push(node);
     }
+  }
+
+  _containsNode(id) {
+    return this.nodes.some((node) => node.id === id);
+  }
+
+  _addLink(
+    country,
+    opposingCountry,
+    conflictId,
+    conflictVictims,
+    conflictLocation,
+    conflictType,
+    conflictIntensity,
+    conflictRegion,
+    conflictStart,
+    conflictEnd,
+  ) {
+    // TODO: not having duplicate links significantly improves performance
+    // however it leaves out important information for the conflict analysis
+    if (!this._containsLink(country, opposingCountry)) {
+      const link = new Link(
+        country,
+        opposingCountry,
+        conflictId,
+        conflictVictims,
+        conflictLocation,
+        conflictType,
+        conflictIntensity,
+        conflictRegion,
+        conflictStart,
+        conflictEnd,
+      );
+      this.links.push(link);
+    }
+  }
+
+  _containsLink(source, target) {
+    return this.links.some(
+      (link) => link.source === source && link.target === target,
+    );
   }
 }
