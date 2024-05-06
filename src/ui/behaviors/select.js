@@ -1,12 +1,9 @@
 import { LINK_STROKE_OPACITY, NODE_STROKE_OPACITY, NODE_FILL } from "../consts";
 
 export default class Select {
-  constructor(links, nodes) {
+  add(links, nodes, link, node) {
     this._links = links;
     this._nodes = nodes;
-  }
-
-  add(link, node) {
     this._link = link;
     this._node = node;
 
@@ -14,21 +11,21 @@ export default class Select {
     node.on("click", this._selected);
   }
 
+  cleanSelection() {
+    this._link.attr("stroke-opacity", LINK_STROKE_OPACITY);
+    this._node.attr("opacity", NODE_STROKE_OPACITY).attr("fill", NODE_FILL);
+  }
+
   _selected(_, d) {
     for (const node of this._nodes) {
       if (node.id !== d.id) node.selected = false;
     }
-    this._cleanSelection();
+    this.cleanSelection();
     if (!d.selected) {
       const [neighboringLinks, neighboringNodes] = this._getNeighbors(d);
       this._highlightSelection(neighboringLinks, neighboringNodes);
     }
     d.selected = !d.selected;
-  }
-
-  _cleanSelection() {
-    this._link.attr("stroke-opacity", LINK_STROKE_OPACITY);
-    this._node.attr("opacity", NODE_STROKE_OPACITY).attr("fill", NODE_FILL);
   }
 
   _getNeighbors(d) {

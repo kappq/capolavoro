@@ -14,6 +14,7 @@ import Zoom from "./behaviors/zoom";
 import Drag from "./behaviors/drag";
 import Tooltip from "./behaviors/tooltip";
 import Select from "./behaviors/select";
+import Options from "./options";
 
 export default class Visualization {
   constructor(graph) {
@@ -29,12 +30,26 @@ export default class Visualization {
     this.zoom = new Zoom(this.linkGroup, this.nodeGroup);
     this.drag = new Drag(this.simulation);
     this.tooltip = new Tooltip();
-    this.select = new Select(this.links, this.nodes); // TODO: links and nodes may vary during the visualization
+    this.select = new Select();
+
+    this.options = new Options(this);
   }
 
   start() {
     this._prepare();
     this._run();
+  }
+
+  update() {
+    this.select.cleanSelection();
+    [this.links, this.nodes] = this.options.filter(this.graph);
+
+    const old = new Map(this.node.data().map((d) => [d.id, d]));
+    this.nodes = this.nodes.map((d) => ({ ...old.get(d.id), ...d }));
+    this.links = this.links.map((d) => ({ ...d }));
+
+    this._run();
+    this.simulation.alpha(1).restart();
   }
 
   _createSimulation() {
@@ -102,7 +117,7 @@ export default class Visualization {
 
     this.drag.add(this.node);
     this.tooltip.add(this.node);
-    this.select.add(this.link, this.node);
+    this.select.add(this.links, this.nodes, this.link, this.node);
 
     this.simulation.nodes(this.nodes);
     this.simulation.force("link").links(this.links);
