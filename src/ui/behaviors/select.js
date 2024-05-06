@@ -13,7 +13,12 @@ export default class Select {
 
   cleanSelection() {
     this._link.attr("stroke-opacity", LINK_STROKE_OPACITY);
-    this._node.attr("opacity", NODE_STROKE_OPACITY).attr("fill", NODE_FILL);
+    this._node.attr("opacity", NODE_STROKE_OPACITY).attr("fill", (d) => {
+      const count = this._links.filter(
+        (link) => {return link.source.id === d.id || link.target.id === d.id},
+      ).length;
+      return NODE_FILL(100 - count * 2.2);
+    });
   }
 
   _selected(_, d) {

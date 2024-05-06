@@ -27,12 +27,12 @@ export default class Visualization {
     [this.linkGroup, this.link] = this._createLinks();
     [this.nodeGroup, this.node] = this._createNodes();
 
-    this.zoom = new Zoom(this.linkGroup, this.nodeGroup);
-    this.drag = new Drag(this.simulation);
-    this.tooltip = new Tooltip();
-    this.select = new Select();
+    this._zoom = new Zoom(this.linkGroup, this.nodeGroup);
+    this._drag = new Drag(this.simulation);
+    this._tooltip = new Tooltip();
+    this._select = new Select();
 
-    this.options = new Options(this);
+    this._options = new Options(this);
   }
 
   start() {
@@ -41,8 +41,8 @@ export default class Visualization {
   }
 
   update() {
-    this.select.cleanSelection();
-    [this.links, this.nodes] = this.options.filter(this.graph);
+    this._select.cleanSelection();
+    [this.links, this.nodes] = this._options.filter(this.graph);
 
     const old = new Map(this.node.data().map((d) => [d.id, d]));
     this.nodes = this.nodes.map((d) => ({ ...old.get(d.id), ...d }));
@@ -89,7 +89,7 @@ export default class Visualization {
   }
 
   _prepare() {
-    this.zoom.add(this.svg);
+    this._zoom.add(this.svg);
 
     this._ticked = this._ticked.bind(this);
     this.simulation.on("tick", this._ticked);
@@ -113,11 +113,16 @@ export default class Visualization {
       .data(this.nodes)
       .join("circle")
       .attr("r", NODE_RADIUS)
-      .attr("fill", NODE_FILL);
+      .attr("fill", (d) => {
+        const count = this.links.filter(
+          (link) => link.source === d.id || link.target === d.id,
+        ).length;
+        return NODE_FILL(100 - count * 2.2);
+      });
 
-    this.drag.add(this.node);
-    this.tooltip.add(this.node);
-    this.select.add(this.links, this.nodes, this.link, this.node);
+    this._drag.add(this.node);
+    this._tooltip.add(this.node);
+    this._select.add(this.links, this.nodes, this.link, this.node);
 
     this.simulation.nodes(this.nodes);
     this.simulation.force("link").links(this.links);
